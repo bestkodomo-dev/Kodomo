@@ -204,6 +204,41 @@
       gap: 12px;
     }
 
+    /* ===== ปุ่มเปิด/ปิดเพลง (ลอยมุมขวาล่าง) ===== */
+    .music-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      width: 52px;
+      height: 52px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.4rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255, 107, 74, 0.35);
+    }
+
+    .music-btn:hover { background: var(--accent); }
+
+    .music-btn:focus-visible {
+      outline: 3px solid var(--text);
+      outline-offset: 3px;
+    }
+
+    /* ซ่อนตัวเล่น YouTube (ยังเล่นเสียงได้ แค่มองไม่เห็น) */
+    #yt-player {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+      top: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     /* ===== 7) บนมือถือ: เรียงเป็นแนวตั้ง ===== */
     @media (max-width: 720px) {
       .hero { grid-template-columns: 1fr; padding-top: 48px; }
@@ -244,7 +279,7 @@
         <article class="card">
           <!-- ป้ายเล็ก: แก้ข้อความได้ -->
           <span class="tag">All Windows</span>
-          <span class="price">฿000</span>
+          <span class="price">฿249</span>
           <a class="btn" href="https://discord.gg/PDw8UF7GaD" target="_blank" rel="noopener">สั่งซื้อ</a>
         </article>
 
@@ -266,6 +301,62 @@
 
   </main>
 
+  <!-- ===== เพลงพื้นหลังจาก YouTube ===== -->
+  <!-- ตัวเล่น YouTube ถูกซ่อนไว้ (ดู #yt-player ใน CSS) -->
+  <div id="yt-player"></div>
+
+  <!-- ปุ่มเปิด/ปิดเพลง -->
+  <button class="music-btn" id="musicBtn" type="button" aria-label="เปิด/ปิดเพลง">🔇</button>
+
+  <script>
+    // ไอดีวิดีโอ YouTube (ส่วนหลัง v= ในลิงก์) ถ้าอยากเปลี่ยนเพลงให้แก้ตรงนี้
+    const VIDEO_ID = "4wUoeTTKZos";
+    const VOLUME = 40; // ระดับเสียง 0 - 100 (ปรับได้)
+
+    let player;
+    let ready = false;
+    let playing = false;
+    const btn = document.getElementById("musicBtn");
+
+    // โหลด YouTube IFrame API
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    // YouTube จะเรียกฟังก์ชันนี้อัตโนมัติเมื่อโหลด API เสร็จ
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("yt-player", {
+        width: "200",
+        height: "200",
+        videoId: VIDEO_ID,
+        playerVars: {
+          loop: 1,
+          playlist: VIDEO_ID,   // จำเป็นสำหรับให้ loop ทำงาน
+          controls: 0,
+          playsinline: 1
+        },
+        events: {
+          onReady: () => {
+            ready = true;
+            player.setVolume(VOLUME);
+          }
+        }
+      });
+    }
+
+    btn.addEventListener("click", () => {
+      if (!ready) return; // ยังโหลดไม่เสร็จ
+
+      if (playing) {
+        player.pauseVideo();
+        btn.textContent = "🔇";
+      } else {
+        player.playVideo();
+        btn.textContent = "🔊";
+      }
+      playing = !playing;
+    });
+  </script>
+
 </body>
 </html>
-
