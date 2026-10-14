@@ -34,12 +34,15 @@
       line-height: 1.7;
     }
 
+    /* ล็อกไม่ให้เลื่อนหน้าเว็บตอนยังอยู่ที่หน้าต้อนรับ */
+    body.locked { overflow: hidden; }
+
     .wrap {
       max-width: 1000px;
       margin: 0 auto;
       padding: 0 24px;
       position: relative;
-      z-index: 1; /* ให้เนื้อหาอยู่เหนือคำว่า Kodomo missyou ด้านหลัง */
+      z-index: 1; /* ให้เนื้อหาอยู่เหนือคำว่า Kodomo ด้านหลัง */
     }
 
     /* คำว่า Kodomo ตัวใหญ่ๆ จางๆ เป็นพื้นหลัง (ตรึงไว้กลางจอ) */
@@ -61,6 +64,54 @@
     }
 
     .bg-word span { transform: rotate(-6deg); }
+
+    /* ===== หน้าจอต้อนรับ (Intro) ===== */
+    .intro {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    /* เมื่อกดเข้าเว็บแล้ว ให้หน้าจอนี้จางหายไป */
+    .intro.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-btn {
+      font-family: "Prompt", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1a0f0c;
+      background: var(--accent);
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 36px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(255, 107, 74, 0.35);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    .intro-btn:hover { filter: brightness(1.1); }
+
+    .intro-btn:focus-visible {
+      outline: 3px solid var(--text);
+      outline-offset: 3px;
+    }
+
+    /* ปุ่มเต้นตุบๆ เบาๆ ให้ดูน่ากด */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.06); }
+    }
 
     /* ===== 3) ส่วนหัวเว็บ (Hero) ===== */
     .hero {
@@ -188,6 +239,15 @@
       border-radius: 6px;
     }
 
+    /* ===== ส่วนร้านในเครือ (missu Shop) ===== */
+    .partner {
+      border-top: 1px solid var(--line);
+      padding: 40px 0 48px;
+    }
+
+    .partner h2 { font-size: 1.6rem; margin: 0 0 8px; }
+    .partner p  { color: var(--muted); margin: 0 0 20px; }
+
     /* ===== ส่วนคลิปรีวิว ===== */
     .reviews {
       border-top: 1px solid var(--line);
@@ -204,7 +264,7 @@
       gap: 12px;
     }
 
-    /* ===== ปุ่มเปิด/ปิดเพลง (ลอยมุมขวาล่าง) ===== */
+    /* ===== ปุ่มเปิด/ปิดเพลง (ลอยมุมขวาล่าง แสดงหลังเข้าเว็บแล้ว) ===== */
     .music-btn {
       position: fixed;
       right: 20px;
@@ -247,7 +307,17 @@
   </style>
 </head>
 
-<body>
+<body class="locked">
+
+  <!-- ===== หน้าจอต้อนรับ: ชื่อร้านอยู่ตรงกลาง + ปุ่มเปิดเพลง ===== -->
+  <div class="intro" id="intro">
+    <div class="logo" role="img" aria-label="Kodomo shop">
+      <span class="logo-name">Kodomo</span>
+      <span class="logo-tag">shop</span>
+    </div>
+    <button class="intro-btn" id="enterBtn" type="button">▶ กดเพื่อเข้าสู่เว็บ + เปิดเพลง</button>
+  </div>
+
   <!-- พื้นหลังตัวอักษร Kodomo (aria-hidden = ไม่ให้โปรแกรมอ่านหน้าจออ่านซ้ำ) -->
   <div class="bg-word" aria-hidden="true"><span>Kodomo</span></div>
 
@@ -286,6 +356,21 @@
       </div>
     </section>
 
+    <!-- ===== ร้านในเครือ: missu Shop ===== -->
+    <section class="partner" id="partner">
+      <h2>ร้านในเครือ</h2>
+      <p>อีกหนึ่งร้านที่แนะนำ สั่งซื้อและสอบถามได้ทาง Discord</p>
+
+      <div class="grid">
+        <article class="card">
+          <h3>missu Shop</h3>
+          <span class="tag">Discord Shop</span>
+          <p>เข้าร่วม Discord ของร้านเพื่อดูสินค้าและสั่งซื้อ</p>
+          <a class="btn" href="https://discord.gg/missu" target="_blank" rel="noopener">เข้า missu Shop</a>
+        </article>
+      </div>
+    </section>
+
     <!-- ===== คลิปรีวิว และติดต่อร้าน ===== -->
     <section class="reviews" id="reviews">
       <h2>รีวิวและติดต่อร้าน</h2>
@@ -295,7 +380,8 @@
       <div class="actions">
         <!-- target="_blank" = เปิดลิงก์ในแท็บใหม่ -->
         <a class="btn" href="https://www.youtube.com/@invisibles2005" target="_blank" rel="noopener">ดูคลิปรีวิวบน YouTube</a>
-        <a class="btn" href="https://discord.gg/PDw8UF7GaD" target="_blank" rel="noopener">Discord ของร้าน</a>
+        <a class="btn" href="https://discord.gg/PDw8UF7GaD" target="_blank" rel="noopener">Discord Kodomo shop</a>
+        <a class="btn" href="https://discord.gg/missu" target="_blank" rel="noopener">Discord missu Shop</a>
       </div>
     </section>
 
@@ -305,7 +391,7 @@
   <!-- ตัวเล่น YouTube ถูกซ่อนไว้ (ดู #yt-player ใน CSS) -->
   <div id="yt-player"></div>
 
-  <!-- ปุ่มเปิด/ปิดเพลง -->
+  <!-- ปุ่มเปิด/ปิดเพลง (ลอยมุมขวาล่าง) -->
   <button class="music-btn" id="musicBtn" type="button" aria-label="เปิด/ปิดเพลง">🔇</button>
 
   <script>
@@ -316,7 +402,11 @@
     let player;
     let ready = false;
     let playing = false;
-    const btn = document.getElementById("musicBtn");
+    let pendingPlay = false; // กดเข้าเว็บก่อนที่ตัวเล่นจะโหลดเสร็จ
+
+    const musicBtn = document.getElementById("musicBtn");
+    const enterBtn = document.getElementById("enterBtn");
+    const intro = document.getElementById("intro");
 
     // โหลด YouTube IFrame API
     const tag = document.createElement("script");
@@ -339,20 +429,41 @@
           onReady: () => {
             ready = true;
             player.setVolume(VOLUME);
+            // ถ้าผู้ใช้กดปุ่มไปก่อนแล้ว ให้เริ่มเล่นทันที
+            if (pendingPlay) startMusic();
           }
         }
       });
     }
 
-    btn.addEventListener("click", () => {
-      if (!ready) return; // ยังโหลดไม่เสร็จ
+    function startMusic() {
+      player.playVideo();
+      playing = true;
+      musicBtn.textContent = "🔊";
+    }
+
+    // กดปุ่มที่หน้าต้อนรับ: เข้าเว็บ + เริ่มเพลง
+    enterBtn.addEventListener("click", () => {
+      intro.classList.add("hide");
+      document.body.classList.remove("locked");
+
+      if (ready) {
+        startMusic();
+      } else {
+        pendingPlay = true; // รอตัวเล่นโหลดเสร็จแล้วค่อยเล่น
+      }
+    });
+
+    // ปุ่มเปิด/ปิดเพลงมุมขวาล่าง
+    musicBtn.addEventListener("click", () => {
+      if (!ready) return;
 
       if (playing) {
         player.pauseVideo();
-        btn.textContent = "🔇";
+        musicBtn.textContent = "🔇";
       } else {
         player.playVideo();
-        btn.textContent = "🔊";
+        musicBtn.textContent = "🔊";
       }
       playing = !playing;
     });
