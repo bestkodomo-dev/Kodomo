@@ -1,1 +1,271 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kodomo Shop | Setting Kodomo &amp; Reshade &amp; Windows</title>
+
+  <!-- Prompt = ฟอนต์เนื้อหา (ไทย+อังกฤษ), Fredoka = ฟอนต์ชื่อร้าน (ต้องต่ออินเทอร์เน็ตตอนเปิดดู) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&family=Prompt:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== 1) ตัวแปรสี: แก้ที่นี่ที่เดียว สีทั้งเว็บเปลี่ยนตาม ===== */
+    :root {
+      --bg: #000000;          /* พื้นหลังหลัก (สีดำ) */
+      --surface: #141414;     /* พื้นของการ์ดสินค้า */
+      --line: #2a2a2a;       /* สีเส้นขอบบางๆ */
+      --text: #ffffff;        /* สีตัวอักษรหลัก (สีขาว) */
+      --muted: #b5b0c4;       /* สีตัวอักษรรอง */
+      --accent: #ff6b4a;      /* สีเน้น (ปุ่ม และป้าย shop) */
+      --plate: #f1ebd8;       /* สีป้ายราคา */
+      --plate-ink: #1d2a5b;   /* สีตัวหนังสือบนป้ายราคา */
+    }
+
+    /* ===== 2) ค่าพื้นฐานของทั้งหน้า ===== */
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Prompt", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1; /* ให้เนื้อหาอยู่เหนือคำว่า Kodomo ด้านหลัง */
+    }
+
+    /* คำว่า Kodomo ตัวใหญ่ๆ จางๆ เป็นพื้นหลัง (ตรึงไว้กลางจอ) */
+    .bg-word {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      pointer-events: none;   /* ไม่บังการคลิกอะไรเลย */
+      user-select: none;
+      z-index: 0;
+      font-family: "Fredoka", "Prompt", sans-serif;
+      font-weight: 600;
+      font-size: min(28vw, 26rem);   /* ใหญ่ตามความกว้างจอ แต่ไม่เกิน 26rem */
+      line-height: 1;
+      color: rgba(255, 107, 74, 0.14); /* สีส้มจางๆ: ปรับเลขท้าย 0.14 ให้จางหรือเข้มขึ้นได้ */
+    }
+
+    .bg-word span { transform: rotate(-6deg); }
+
+    /* ===== 3) ส่วนหัวเว็บ (Hero) ===== */
+    .hero {
+      padding: 72px 0 56px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.25;
+      font-weight: 800;
+      margin: 0 0 16px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin: 0 0 28px;
+      max-width: 34ch;
+    }
+
+    /* โลโก้ชื่อร้าน: Kodomo เป็นตัวใหญ่ และ shop อยู่ในแคปซูลสีส้ม เอียงนิดๆ */
+    .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      font-family: "Fredoka", "Prompt", sans-serif;
+      font-weight: 600;
+      transform: rotate(-3deg);
+    }
+
+    .logo-name {
+      font-size: clamp(3.2rem, 11vw, 5.6rem);
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .logo-tag {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      line-height: 1;
+      background: var(--accent);
+      color: #1a0f0c;
+      padding: 6px 30px 10px;
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(255, 107, 74, 0.35);
+    }
+
+    /* ===== 4) ปุ่มกด ===== */
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #1a0f0c;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+    }
+
+    .btn:hover { filter: brightness(1.1); }
+
+    /* โชว์กรอบเวลากดแท็บด้วยคีย์บอร์ด (ช่วยคนที่ไม่ได้ใช้เมาส์) */
+    a:focus-visible {
+      outline: 3px solid var(--text);
+      outline-offset: 3px;
+    }
+
+    /* ===== 5) รายการสินค้า ===== */
+    .products { padding: 24px 0 64px; }
+
+    .products h2 {
+      font-size: 1.6rem;
+      margin: 0 0 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 320px));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card h3 { margin: 0; font-size: 1.2rem; }
+
+    /* ป้ายเล็กใต้ชื่อสินค้า (เช่น All Windows) */
+    .tag {
+      align-self: flex-start;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.4;
+      padding: 2px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      flex-grow: 1; /* ดันราคากับปุ่มลงไปอยู่ล่างสุดเสมอ */
+    }
+
+    /* ป้ายราคา ใช้สีเดียวกับป้ายทะเบียน */
+    .price {
+      margin-top: auto; /* ดันราคากับปุ่มลงล่างสุดของการ์ด */
+      align-self: flex-start;
+      background: var(--plate);
+      color: var(--plate-ink);
+      font-weight: 800;
+      padding: 2px 14px;
+      border: 2px solid var(--plate-ink);
+      border-radius: 6px;
+    }
+
+    /* ===== ส่วนคลิปรีวิว ===== */
+    .reviews {
+      border-top: 1px solid var(--line);
+      padding: 40px 0 64px;
+    }
+
+    .reviews h2 { font-size: 1.6rem; margin: 0 0 8px; }
+    .reviews p  { color: var(--muted); margin: 0 0 20px; }
+
+    /* ===== 6) แถวปุ่ม: วางปุ่มเรียงข้างกัน ===== */
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* ===== 7) บนมือถือ: เรียงเป็นแนวตั้ง ===== */
+    @media (max-width: 720px) {
+      .hero { grid-template-columns: 1fr; padding-top: 48px; }
+      .logo { order: -1; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- พื้นหลังตัวอักษร Kodomo (aria-hidden = ไม่ให้โปรแกรมอ่านหน้าจออ่านซ้ำ) -->
+  <div class="bg-word" aria-hidden="true"><span>Kodomo</span></div>
+
+  <main class="wrap">
+
+    <!-- ===== ส่วนหัว ===== -->
+    <section class="hero">
+      <div>
+        <!-- แก้ข้อความตรงนี้ได้เลย -->
+        <h1>Setting Kodomo &amp; Reshade &amp; Windows</h1>
+        <p>ติดตั้งง่าย Ticket ตอบไว และมีคนช่วยตอบเมื่อติดปัญหา</p>
+        <a class="btn" href="#products">ดูสินค้าทั้งหมด</a>
+      </div>
+
+      <!-- โลโก้ชื่อร้าน: แก้คำว่า Kodomo กับ shop ตรงนี้ได้ -->
+      <div class="logo" role="img" aria-label="Kodomo shop">
+        <span class="logo-name">Kodomo</span>
+        <span class="logo-tag">shop</span>
+      </div>
+    </section>
+
+    <!-- ===== สินค้า (ข้อมูลตัวอย่าง แก้เป็นของจริงได้) ===== -->
+    <section class="products" id="products">
+      <h2>สินค้าของร้าน</h2>
+
+      <div class="grid">
+
+        <!-- การ์ดสินค้า 1: อยากเพิ่มสินค้า ให้ก๊อปบล็อก <article> ทั้งอันไปวางต่อ -->
+        <article class="card">
+          <!-- ป้ายเล็ก: แก้ข้อความได้ -->
+          <span class="tag">All Windows</span>
+          <span class="price">฿249</span>
+          <a class="btn" href="https://discord.gg/PDw8UF7GaD" target="_blank" rel="noopener">สั่งซื้อ</a>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ===== คลิปรีวิว และติดต่อร้าน ===== -->
+    <section class="reviews" id="reviews">
+      <h2>รีวิวและติดต่อร้าน</h2>
+      <p>ดูตัวอย่างการใช้งานจริงจากคลิปรีวิว หรือสั่งซื้อและสอบถามได้ทาง Discord</p>
+
+      <!-- .actions จัดปุ่มให้เรียงข้างกัน (ซ้ายไปขวา) ถ้าจอแคบจะขึ้นบรรทัดใหม่เอง -->
+      <div class="actions">
+        <!-- target="_blank" = เปิดลิงก์ในแท็บใหม่ -->
+        <a class="btn" href="https://www.youtube.com/@invisibles2005" target="_blank" rel="noopener">ดูคลิปรีวิวบน YouTube</a>
+        <a class="btn" href="https://discord.gg/PDw8UF7GaD" target="_blank" rel="noopener">Discord ของร้าน</a>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
 
